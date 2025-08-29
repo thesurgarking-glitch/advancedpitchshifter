@@ -1,0 +1,32 @@
+name: macOS VST3 & AU Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@v3
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Collect Plugins
+        run: |
+          mkdir -p artifact
+          find build -name "*.vst3" -or -name "*.component" -exec cp -R {} artifact/ \;
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: AdvancedPitchShifter-macOS
+          path: artifact
